@@ -45,12 +45,12 @@ ROOT_DEV = 0x306
 entry _start
 _start:
 	mov	ax,#BOOTSEG
-	mov	ds,ax
+	mov	ds,ax                  !ds=0x07c0
 	mov	ax,#INITSEG
-	mov	es,ax
-	mov	cx,#256
-	sub	si,si
-	sub	di,di
+	mov	es,ax                  !es=0x9000
+	mov	cx,#256                !cx = 256
+	sub	si,si                  !si = 0
+	sub	di,di                  !di = 0
 	rep
 	movw
 	jmpi	go,INITSEG
