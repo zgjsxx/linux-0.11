@@ -81,23 +81,31 @@ int sys_setup(void * BIOS)
 	callable = 0;
 #ifndef HD_TYPE
 	for (drive=0 ; drive<2 ; drive++) {
-		hd_info[drive].cyl = *(unsigned short *) BIOS;
-		hd_info[drive].head = *(unsigned char *) (2+BIOS);
-		hd_info[drive].wpcom = *(unsigned short *) (5+BIOS);
-		hd_info[drive].ctl = *(unsigned char *) (8+BIOS);
-		hd_info[drive].lzone = *(unsigned short *) (12+BIOS);
-		hd_info[drive].sect = *(unsigned char *) (14+BIOS);
+		hd_info[drive].cyl = *(unsigned short *) BIOS;      //柱面
+		hd_info[drive].head = *(unsigned char *) (2+BIOS);  //磁头数
+		hd_info[drive].wpcom = *(unsigned short *) (5+BIOS);//写前预补偿柱面号
+		hd_info[drive].ctl = *(unsigned char *) (8+BIOS);   //控制字节
+		hd_info[drive].lzone = *(unsigned short *) (12+BIOS);//磁头着陆区柱面号
+		hd_info[drive].sect = *(unsigned char *) (14+BIOS);  //每磁道扇区数
 		BIOS += 16;
 	}
+	/*
+	setup.s程序在取BIOS硬盘参数表信息时，如果系统中只有一个硬盘，就会将对应的第2哥硬盘的16字节全部清零，因此这里只要判断第二个硬盘柱面数
+	是否为0就可以知道是否有第2块硬盘
+	*/
 	if (hd_info[1].cyl)
 		NR_HD=2;
 	else
 		NR_HD=1;
 #endif
+	/*
+	该数组的0项和5项分别表示两个硬盘的整体参数，
+	而项1-4和6-9分别表示两个硬盘的4个分区的参数。
+	*/
 	for (i=0 ; i<NR_HD ; i++) {
-		hd[i*5].start_sect = 0;
+		hd[i*5].start_sect = 0;                 //第一块硬盘的其实扇区
 		hd[i*5].nr_sects = hd_info[i].head*
-				hd_info[i].sect*hd_info[i].cyl;
+				hd_info[i].sect*hd_info[i].cyl;  //磁头数* 柱面 * 扇区
 	}
 
 	/*
@@ -134,7 +142,7 @@ int sys_setup(void * BIOS)
 		hd[i*5].nr_sects = 0;
 	}
 	for (drive=0 ; drive<NR_HD ; drive++) {
-		if (!(bh = bread(0x300 + drive*5,0))) {
+		if (!(bh = bread(0x300 + drive*5,0))) {//0x300， 0x305是设备号
 			printk("Unable to read partition table of drive %d\n\r",
 				drive);
 			panic("");
@@ -144,7 +152,8 @@ int sys_setup(void * BIOS)
 			printk("Bad partition table on drive %d\n\r",drive);
 			panic("");
 		}
-		p = 0x1BE + (void *)bh->b_data;
+		//MBR 446字节 0000-01BD   DPT 64字节 01BE-01FD 接数标志55AA
+		p = 0x1BE + (void *)bh->b_data;//分区表位于第1扇区0x1BE处
 		for (i=1;i<5;i++,p++) {
 			hd[i+5*drive].start_sect = p->start_sect;
 			hd[i+5*drive].nr_sects = p->nr_sects;

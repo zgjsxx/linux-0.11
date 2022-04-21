@@ -371,7 +371,7 @@ void mount_root(void)
     // 结构中的引用计数设置为0（表示空闲），并发超级块表中各项结构的设备字段初始化为0（也
     // 表示空闲）。如果根文件系统所在设备是软盘的话，就提示“插入根文件系统盘，并按回车键”，
     // 并等待按键。
-	for(i=0;i<NR_FILE;i++)
+	for(i=0;i<NR_FILE;i++)  //NR_FILE=64
 		file_table[i].f_count=0;                        // 初始化文件表
 	if (MAJOR(ROOT_DEV) == 2) {
 		printk("Insert root floppy and press ENTER");   // 提示插入根文件系统盘

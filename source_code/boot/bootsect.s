@@ -54,9 +54,9 @@ _start:
 	rep
 	movw
 	jmpi	go,INITSEG
-go:	mov	ax,cs
-	mov	ds,ax
-	mov	es,ax
+go:	mov	ax,cs                  !cs=0x9000
+	mov	ds,ax                  !ds=0x9000
+	mov	es,ax                  !es=0x9000
 ! put stack at 0x9ff00.
 	mov	ss,ax
 	mov	sp,#0xFF00		! arbitrary value >>512
@@ -136,7 +136,7 @@ root_defined:
 ! the setup-routine loaded directly after
 ! the bootblock:
 
-	jmpi	0,SETUPSEG
+	jmpi	0,SETUPSEG    !0x9020
 
 ! This routine loads the system at address 0x10000, making sure
 ! no 64kB boundaries are crossed. We try to load it as fast as
