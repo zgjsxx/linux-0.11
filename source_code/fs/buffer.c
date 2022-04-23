@@ -394,6 +394,7 @@ struct buffer_head * bread(int dev,int block)
     // 等待指定数据块被读入，并等待缓冲区解锁。在睡眠醒来之后，如果该缓冲区已
     // 更新，则返回缓冲区头指针，退出。否则表明读设备操作失败，于是释放该缓
     // 冲区，返回NULL，退出。
+	// 这个时候理论上讲不会有其他读写磁盘请求，所以该读请求会被立即执行
 	ll_rw_block(READ,bh);
 	wait_on_buffer(bh);
 	if (bh->b_uptodate)
