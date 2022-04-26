@@ -39,11 +39,12 @@ start:
 	xor	bh,bh
 	int	0x10		! save it in known place, con_init fetches
 	mov	[0],dx		! it from 0x90000.
+
 ! Get memory size (extended mem, kB)
 
 	mov	ah,#0x88
 	int	0x15
-	mov	[2],ax
+	mov	[2],ax  !0x90002 将扩展内存的大小写在这里，main函数中会用到
 
 ! Get video-card data:
 
