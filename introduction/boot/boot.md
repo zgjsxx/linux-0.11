@@ -21,3 +21,19 @@ memory_end = (1<<20) + (EXT_MEM_K<<10);     // 内存大小=1Mb + 扩展内存(k
 ```
 
 这里可以计算处内存的总大小。
+
+
+下面这段则是获取硬盘参数
+```asm
+	mov	ax,#0x0000
+	mov	ds,ax          !ds = 0
+	lds	si,[4*0x41]    !这条指令将0x0000:0x0104单元存放的值赋值给si寄存器，将0x0000:0x0106单元存放的值赋给ds寄存器
+	mov	ax,#INITSEG
+	mov	es,ax
+	mov	di,#0x0080     !es:di = 0x9000:0x0090
+	mov	cx,#0x10       !循环16次
+	rep
+	movsb
+```    
+关于8086的中断向量表可以参考以下文档
+https://wenku.baidu.com/view/b865a394c47da26925c52cc58bd63186bceb929f.html

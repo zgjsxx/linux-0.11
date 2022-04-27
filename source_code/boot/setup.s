@@ -63,25 +63,28 @@ start:
 	mov	[12],cx
 
 ! Get hd0 data
-
+! 8086系统在存储器的最低1KB区域（00000H~003FFH）建立一个中断向量表，存放256个中断类型的中断向量。这1024个单元被分成256组，每组包括4个字节单元，
+! 存储一个中断向量的段基址和段内偏移地址，高2个字节用于存放段基址，低两个字节用于存放段内偏移地址。
+! BIOS设定的中断向量表中设置的0x41号中断向量位置(0x0000:0x0104)存放的不是中断程序入口地址，而是第一个磁盘的基本参数表，第二个磁盘基本参数表的参数入口地址存放于int 0x46
 	mov	ax,#0x0000
-	mov	ds,ax
-	lds	si,[4*0x41]
+	mov	ds,ax          !ds = 0
+	lds	si,[4*0x41]    !这条指令将0x0000:0x0104单元存放的值赋值给si寄存器，将0x0000:0x0106单元存放的值赋给ds寄存器
 	mov	ax,#INITSEG
 	mov	es,ax
-	mov	di,#0x0080
-	mov	cx,#0x10
+	mov	di,#0x0080     !es:di = 0x9000:0x0090
+	mov	cx,#0x10       !循环16次
 	rep
 	movsb
 
 ! Get hd1 data
 
+
 	mov	ax,#0x0000
-	mov	ds,ax
-	lds	si,[4*0x46]
+	mov	ds,ax       
+	lds	si,[4*0x46] 
 	mov	ax,#INITSEG
 	mov	es,ax
-	mov	di,#0x0090
+	mov	di,#0x0090   
 	mov	cx,#0x10
 	rep
 	movsb
