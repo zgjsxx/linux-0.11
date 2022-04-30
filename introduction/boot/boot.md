@@ -56,6 +56,56 @@ movw 代表复制一个字（2 bytes）的数据
 
 总结起来， 整个操作系统的代码的第一段实现的功能就是将内存中的内容进行迁移。
 
+接下来使用段间跳转指令jmpi实现PC的跳转
+```asm
+jmpi	go,INITSEG
+```
+这里跳转到0x9000的go标签处，目前setup.s的程序已经拷贝到了0x9000处， 所以这句话实际上就是跳转到setup.s中的go标签处执行
+
+```asm
+go:	mov	ax,cs                  !cs=0x9000
+	mov	ds,ax                  !ds=0x9000
+	mov	es,ax                  !es=0x9000
+! put stack at 0x9ff00.
+	mov	ss,ax
+	mov	sp,#0xFF00		! arbitrary value >>512
+```
+
+ss 为栈段寄存器， ss被赋值0x9000, sp被赋值0xFF00， 因此选择的栈顶的位置ss:sp 就是0x9FF00。
+
+
+
+```asm
+load_setup:
+	mov	dx,#0x0000		! drive 0, head 0
+	mov	cx,#0x0002		! sector 2, track 0
+	mov	bx,#0x0200		! address = 512, in INITSEG
+	mov	ax,#0x0200+SETUPLEN	! service 2, nr of sectors
+	int	0x13			! read it
+	jnc	ok_load_setup		! ok - continue
+	mov	dx,#0x0000
+	mov	ax,#0x0000		! reset the diskette
+	int	0x13
+	j	load_setup
+```
+BIOS INT 0x13中断读取磁盘到内存。　
+
+**功能号**：AH = 02H
+
+**作用**： 读磁盘扇区：
+
+**调用参数**：
+- AL = 扇区数
+- CX中的0~5位代表扇区号，CX中的6~15位代表柱面号（其中，CL的6~7为柱面数的高两位，CH存低8位）
+- DH/DL = 磁头号/驱动器号
+- ES:BX = 数据缓冲区地址
+
+**返回参数**：
+
+- 读成功 ⇒ AH = 00H， AL = 读取的扇区数，CF = 0
+- 读失败 ⇒ AH = 错误码
+
+因此该段代码的意思就是将磁盘的第2-5个扇区拷贝到es:bx 处 即0x90200处。
 
 # setup.s
 
