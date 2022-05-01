@@ -105,6 +105,8 @@ BIOS INT 0x13中断读取磁盘到内存。　
 - 读成功 ⇒ AH = 00H， AL = 读取的扇区数，CF = 0
 - 读失败 ⇒ AH = 错误码
 
+参考https://www.cnblogs.com/AmitX-moten/p/4823598.html 0x13号中断。
+
 因此该段代码的意思就是将磁盘的第2-5个扇区拷贝到es:bx 处 即0x90200处。
 
 # setup.s

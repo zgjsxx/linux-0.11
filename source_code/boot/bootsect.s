@@ -85,7 +85,7 @@ ok_load_setup:
 	int	0x13
 	mov	ch,#0x00
 	seg cs
-	mov	sectors,cx
+	mov	sectors,cx      !保存每磁道扇区数
 	mov	ax,#INITSEG
 	mov	es,ax
 
@@ -136,7 +136,7 @@ root_defined:
 ! the setup-routine loaded directly after
 ! the bootblock:
 
-	jmpi	0,SETUPSEG    !0x9020
+	jmpi	0,SETUPSEG    !0x9020   跳转到0x9020 处执行， 即setup.s
 
 ! This routine loads the system at address 0x10000, making sure
 ! no 64kB boundaries are crossed. We try to load it as fast as
@@ -159,11 +159,11 @@ rp_read:
 	jb ok1_read
 	ret
 ok1_read:
-	seg cs
-	mov ax,sectors
-	sub ax,sread
-	mov cx,ax
-	shl cx,#9
+	seg cs              
+	mov ax,sectors        !取出每磁道的扇区数
+	sub ax,sread          !减去当前磁道已读扇区数
+	mov cx,ax             !cx = ax = 当前磁道未读扇区数
+	shl cx,#9             
 	add cx,bx
 	jnc ok2_read
 	je ok2_read
@@ -209,7 +209,7 @@ read_track:
 	mov dl,#0
 	and dx,#0x0100
 	mov ah,#2
-	int 0x13
+	int 0x13              !读取磁盘的内容
 	jc bad_rt
 	pop dx
 	pop cx
