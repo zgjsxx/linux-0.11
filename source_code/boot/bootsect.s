@@ -150,7 +150,7 @@ track:	.word 0			! current track
 
 read_it:
 	mov ax,es
-	test ax,#0x0fff
+	test ax,#0x0fff      !0x1000  & 0x0fff  按位与
 die:	jne die			! es must be at 64kB boundary
 	xor bx,bx		! bx is starting address within segment
 rp_read:
@@ -202,13 +202,13 @@ read_track:
 	push dx
 	mov dx,track
 	mov cx,sread
-	inc cx
+	inc cx                !从sread开始读， 读al个sector
 	mov ch,dl
 	mov dx,head
 	mov dh,dl
 	mov dl,#0
-	and dx,#0x0100
-	mov ah,#2
+	and dx,#0x0100        
+	mov ah,#2             !ah = 2, 是读取磁盘扇区功能号
 	int 0x13              !读取磁盘的内容
 	jc bad_rt
 	pop dx
